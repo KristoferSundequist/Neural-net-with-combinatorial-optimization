@@ -1,21 +1,19 @@
 function var int: absError(var int: prediction, var int: label) = abs(prediction-label);
 
-int: examples = 18;
-int: features = 2;
-array[1..examples, 1..features] of int: trainingSet = [|6,3|3,2|1,6|3,1|1,7|3,1|6,2|0,1|5,1|2,7|8,4|-8,4|8,-4|-2,1|-4,4|-3,2|0,0|4,0|];
+int: examples = 23;
+int: features = 4;
+array[1..examples, 1..features] of int: trainingSet = [|6,3,4,-3|3,2,-2,1|1,6,1,1|3,1,7,1|1,7,7,2|3,1,7,1|6,2,-2,4|0,1,1,1|5,1,-3,1|2,7,-2,1|8,4,1,-6|-8,4,6,-9|8,-4,-6,-6|-2,1,4,1|-4,4,1,-7|-3,2,0,5|0,0,0,1|4,0,0,1|-5,-1,0,1|8,2,0,1|-3,3,0,1|4,0,0,1|2,-7,0,3|];
 array[1..examples] of var int: labels;
-% function to approx
-%constraint forall(i in 1..examples)(labels[i] = trainingSet[i,1]*trainingSet[i,1] + trainingSet[i,2]*trainingSet[i,2]*trainingSet[i,2]);
-constraint forall(i in 1..examples)(labels[i] = trainingSet[i,1]*trainingSet[i,1] + trainingSet[i,2]*trainingSet[i,2] + trainingSet[i,1]*trainingSet[i,2]);
 
-int: varBounds = 10;
+constraint forall(i in 1..examples)(labels[i] = trainingSet[i,1]*trainingSet[i,1] + trainingSet[i,2]*trainingSet[i,2] + trainingSet[i,1]*trainingSet[i,2] - trainingSet[i,3]*trainingSet[i,4]);
 
-int: layerSize = 3;
-array[1..layerSize] of var -varBounds .. varBounds: bias1;
-array[1..features, 1..layerSize] of var -varBounds .. varBounds: w1;
 
-var -varBounds .. varBounds: bias2;
-array[1..layerSize] of var -varBounds .. varBounds: w2;
+int: layerSize = 4;
+array[1..layerSize] of var -12 .. 12: bias1;
+array[1..features, 1..layerSize] of var -3 .. 3: w1;
+
+var -12 .. 12: bias2;
+array[1..layerSize] of var -12 .. 12: w2;
 
 
 % hidden
@@ -31,17 +29,17 @@ constraint forall(e in 1..examples)(outputs[e] = sum(l in 1..layerSize)(hidden[l
 
 % symmetry break
 constraint exists(n in 1..features)(forall(i,j in 1..layerSize where i = j-1)(w1[n,i] <= w1[n,j]));
-
 constraint exists(n in 1..features)(exists(i,j in 1..layerSize where i != j)(w1[n,i] < w1[n,j]));
-
 constraint forall(i,j in 1..features where i = j-1)(min(v in 1..layerSize)(w1[i,v]) < min(v in 1..layerSize)(w1[j,v]));
 
 % extra prop
-int: bound = 10;
+int: bound = 15;
 constraint forall(i in 1..examples)(absError(outputs[i], labels[i]) < bound); 
 
-var int: cost;
+var 0 .. 100: cost;
 constraint cost = sum(e in 1..examples)(absError(outputs[e], labels[e]));
-%solve satisfy;
 
 solve minimize cost;
+output[show(labels)++"\n"];
+output[show(outputs)++"\n"];
+output[show(cost)];
