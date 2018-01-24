@@ -1,6 +1,9 @@
 % abs error function
 function var int: absError(var int: prediction, var int: label) = abs(prediction-label);
 
+% squared error function
+function var int: squaredError(var int: prediction, var int: label) = let {var int: err = prediction-label} in err*err;
+
 % num training examples
 int: examples = 23;
 
@@ -17,13 +20,13 @@ array[1..examples] of var int: labels;
 constraint forall(i in 1..examples)(labels[i] = trainingSet[i,1]*trainingSet[i,1] + trainingSet[i,2]*trainingSet[i,2] + trainingSet[i,1]*trainingSet[i,2] - trainingSet[i,3]*trainingSet[i,4]);
 
 % num neurons in hidden layer
-int: layerSize = 4;
+int: layerSize = 10;
 
 % first bias
 array[1..layerSize] of var -15 .. 15: bias1;
 
 % first weights
-array[1..features, 1..layerSize] of var -3 .. 3: w1;
+array[1..features, 1..layerSize] of var -10 .. 10: w1;
 
 % second bias
 var -15 .. 15: bias2;
@@ -33,7 +36,7 @@ array[1..layerSize] of var -15 .. 15: w2;
 
 
 % values of hidden neurons
-array[1..layerSize, 1..examples] of var 0..10: hidden;
+array[1..layerSize, 1..examples] of var -20..20: hidden;
 
 % hidden values equals features * weights + first bias under relu
 constraint forall(l in 1..layerSize, e in 1..examples)(
@@ -52,18 +55,14 @@ constraint symmetry_breaking_constraint(exists(n in 1..features)(forall(i,j in 1
 constraint symmetry_breaking_constraint(exists(n in 1..features)(exists(i,j in 1..layerSize where i != j)(w1[n,i] < w1[n,j])));
 constraint symmetry_breaking_constraint(forall(i,j in 1..features where i = j-1)(min(v in 1..layerSize)(w1[i,v]) < min(v in 1..layerSize)(w1[j,v])));
 
-% extra constraint that constrains each output to be within 'bound' of the label
-int: bound = 15;
-constraint forall(i in 1..examples)(absError(outputs[i], labels[i]) < bound); 
-
-% cost function is sum of abs distance between outputs and labels
-var 0..100: cost;
-constraint cost = sum(e in 1..examples)(absError(outputs[e], labels[e]));
+% cost function is sum of squared distance between outputs and labels
+var 0..100000: cost;
+constraint cost = sum(e in 1..examples)(squaredError(outputs[e], labels[e]));
 
 solve minimize cost;
 
-output[show(labels)];
-output["\n"];
-output[show(outputs)];
-output["\n"];
-output[show(cost)];
+%output[show(labels)];
+%output["\n"];
+%output[show(outputs)];
+%output["\n"];
+%output[show(cost)];
