@@ -17,20 +17,20 @@ array[1..examples] of {0,1}: labels = [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0,
 int: layerSize = 3;
 
 % first bias
-array[1..layerSize] of var -20 .. 20: bias1;
+array[1..layerSize] of var -50 .. 50: bias1;
 
 % first weights
-array[1..features, 1..layerSize] of var -20 .. 20: w1;
+array[1..features, 1..layerSize] of var -50 .. 50: w1;
 
 % second bias
 var -50 .. 50: bias2;
 
 % second weights
-array[1..layerSize] of var -30 .. 30: w2;
+array[1..layerSize] of var -50 .. 50: w2;
 
 
 % values of hidden neurons
-set of int: hidden_range = -50..50;
+set of int: hidden_range = -200..200;
 array[1..layerSize, 1..examples] of var hidden_range: hidden;
 
 % hidden values equals features * weights + first bias under relu
@@ -62,9 +62,9 @@ constraint symmetry_breaking_constraint(forall(i,j in 1..features where i = j-1)
 
 solve 
   :: seq_search([
+  int_search(bias1,first_fail, indomain_median, complete),
   int_search([w1[f,l] | f in 1..features, l in 1..layerSize],first_fail, indomain_median, complete),
-  int_search(w2,first_fail, indomain_median, complete),
-  int_search(bias1,first_fail, indomain_median, complete)
+  int_search(w2,first_fail, indomain_median, complete)
   ])
   minimize cost;
 
