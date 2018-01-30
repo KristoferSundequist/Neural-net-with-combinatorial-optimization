@@ -1,8 +1,7 @@
-% abs error function
-function var int: absError(var int: prediction, var int: label) = abs(prediction-label);
+set of int: output_range = -20..140;
 
 % squared error function
-function var int: squaredError(var int: prediction, var int: label) = let {var int: err = prediction-label} in err*err;
+function var 0..20000: squaredError(var output_range: prediction, int: label) = let {var -200..200: err = prediction-label} in err*err;
 
 % num training examples
 int: examples = 23;
@@ -11,16 +10,16 @@ int: examples = 23;
 int: features = 4;
 
 % training examples
-array[1..examples, 1..features] of int: trainingSet = [|6,3,4,-3|3,2,-2,1|1,6,1,1|3,1,7,1|1,7,7,2|3,1,7,1|6,2,-2,4|0,1,1,1|5,1,-3,1|2,7,-2,1|8,4,1,-6|-8,4,6,-9|8,-4,-6,-6|-2,1,4,1|-4,4,1,-7|-3,2,0,5|0,0,0,1|4,0,0,1|-5,-1,0,1|8,2,0,1|-3,3,0,1|4,0,0,1|2,-7,0,3|];
+array[1..examples, 1..features] of -10..10: trainingSet = [|6,3,4,-3|3,2,-2,1|1,6,1,1|3,1,7,1|1,7,7,2|3,1,7,1|6,2,-2,4|0,1,1,1|5,1,-3,1|2,7,-2,1|8,4,1,-6|-8,4,6,-9|8,-4,-6,-6|-2,1,4,1|-4,4,1,-7|-3,2,0,5|0,0,0,1|4,0,0,1|-5,-1,0,1|8,2,0,1|-3,3,0,1|4,0,0,1|2,-7,0,3|];
 
 % labels
-array[1..examples] of var int: labels;
+array[1..examples] of int: labels = [75, 21, 42, 6, 43, 6, 60, 0, 34, 69, 118, 102, 12, -1, 23, 7, 0, 16, 31, 84, 9, 16, 39];
 
 % function to approximate
-constraint forall(i in 1..examples)(labels[i] = trainingSet[i,1]*trainingSet[i,1] + trainingSet[i,2]*trainingSet[i,2] + trainingSet[i,1]*trainingSet[i,2] - trainingSet[i,3]*trainingSet[i,4]);
+%constraint forall(i in 1..examples)(labels[i] = trainingSet[i,1]*trainingSet[i,1] + trainingSet[i,2]*trainingSet[i,2] + trainingSet[i,1]*trainingSet[i,2] - trainingSet[i,3]*trainingSet[i,4]);
 
 % num neurons in hidden layer
-int: layerSize = 10;
+int: layerSize = 3;
 
 % first bias
 array[1..layerSize] of var -15 .. 15: bias1;
@@ -40,15 +39,15 @@ array[1..layerSize, 1..examples] of var -20..20: hidden;
 
 % hidden values equals features * weights + first bias under relu
 constraint forall(l in 1..layerSize, e in 1..examples)(
-  let { var int: result = sum(f in 1..features)(trainingSet[e,f]*w1[f,l]) + bias1[l]} in
+  let { var -20..20: result = sum(f in 1..features)(trainingSet[e,f]*w1[f,l]) + bias1[l]} in
     if result > 0 then hidden[l,e] = result else hidden[l,e] = 0 endif % relu
-);
+)  :: bounds;
 
 % outputs
-array[1..examples] of var int: outputs;
+array[1..examples] of var output_range: outputs;
 
 % outputs equals hidden values * second weights + second bias
-constraint forall(e in 1..examples)(outputs[e] = sum(l in 1..layerSize)(hidden[l,e]*w2[l]) + bias2);
+constraint forall(e in 1..examples)(outputs[e] = sum(l in 1..layerSize)(hidden[l,e]*w2[l]) + bias2) :: bounds;
 
 % symmetry break
 constraint symmetry_breaking_constraint(exists(n in 1..features)(forall(i,j in 1..layerSize where i = j-1)(w1[n,i] <= w1[n,j])));
