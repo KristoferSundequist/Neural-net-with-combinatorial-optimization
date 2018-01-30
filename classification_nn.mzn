@@ -18,13 +18,13 @@ array[1..examples] of var {0,1}: labels;
 constraint forall(i in 1..examples)(labels[i] = if trainingSet[i,1]*trainingSet[i,1] + trainingSet[i,2]*trainingSet[i,2] + trainingSet[i,1]*trainingSet[i,2] - trainingSet[i,3]*trainingSet[i,4] >= 30 then 1 else 0 endif);
 
 % num neurons in hidden layer
-int: layerSize = 4;
+int: layerSize = 5;
 
 % first bias
-array[1..layerSize] of var -3 .. 3: bias1;
+array[1..layerSize] of var -5 .. 5: bias1;
 
 % first weights
-array[1..features, 1..layerSize] of var -3 .. 3: w1;
+array[1..features, 1..layerSize] of var -2 .. 2: w1;
 
 % second bias
 var -10 .. 10: bias2;
@@ -44,7 +44,7 @@ constraint forall(l in 1..layerSize, e in 1..examples)(
 ) :: bounds;
 
 % outputs
-set of int: output_range = -30..30;
+set of int: output_range = -40..40;
 array[1..examples] of var output_range: outputs;
 
 % outputs (before activation) equals hidden values * second weights + second bias
@@ -61,7 +61,6 @@ constraint forall(e in 1..examples)(predictions[e] = bool2int(outputs[e] > 0)) :
 % cost function sum of incorrect predictions
 var 0..examples: cost;
 constraint cost = sum(e in 1..examples)(bool2int(predictions[e] != labels[e])) :: bounds;
-
 
 % symmetry break
 constraint symmetry_breaking_constraint(exists(n in 1..features)(forall(i,j in 1..layerSize where i = j-1)(w1[n,i] <= w1[n,j]))) :: bounds;
