@@ -15,7 +15,7 @@ array[1..examples, 1..features] of -10..10: trainingSet = [|6,3,4,-3|3,2,-2,1|1,
 
 array[1..examples] of var {0,1}: labels;
 %constraint forall(i in 1..examples)(labels[i] = if trainingSet[i,1]+trainingSet[i,2]+trainingSet[i,3]+trainingSet[i,4] >= 10 then 1 else 0 endif);
-constraint forall(i in 1..examples)(labels[i] = if trainingSet[i,1]*trainingSet[i,1]*trainingSet[i,2] + trainingSet[i,2]*trainingSet[i,2] + trainingSet[i,1]*trainingSet[i,2] - trainingSet[i,3]*trainingSet[i,4] >= 30 then 1 else 0 endif);
+constraint forall(i in 1..examples)(labels[i] = if trainingSet[i,1]*trainingSet[i,1] + trainingSet[i,2]*trainingSet[i,2] + trainingSet[i,1]*trainingSet[i,2] - trainingSet[i,3]*trainingSet[i,4] >= 30 then 1 else 0 endif);
 
 % num neurons in hidden layer
 int: layerSize = 4;
